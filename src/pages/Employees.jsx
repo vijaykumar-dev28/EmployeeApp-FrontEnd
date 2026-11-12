@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
-import { deleteEmployee, getEmployees } from '../services/services'
+import { deleteEmployee, getAllDepartments, getEmployees, searchByName } from '../services/services'
 import { useNavigate } from 'react-router-dom'
+import { toast } from 'react-toastify'
 
 const Employees = () => {
 
@@ -10,13 +11,31 @@ const Employees = () => {
     let [depts, setDepts] = useState([])
     let [deptsFilter, setDeptsFilter] = useState("")
 
+    let [search, setSearch] = useState("")
+
     let fetchEmployees = async () => {
-        let response = await getEmployees();
-        let data = response.data
+        let response4EmployeesAll = await getEmployees();
+        let data = response4EmployeesAll.data
         setEmployees(data)
 
-        let departments = [...new Set(data.map(emp => emp.department))]
+        let response4departmentsAll = await getAllDepartments();
+        let departments = response4departmentsAll.data
         setDepts(departments)
+
+        console.log("Departments", departments);
+
+    }
+
+    let handleSearch = async (e) => {
+        let value = e.target.value
+        setSearch(value)
+
+        if (value.trim() === "") {
+            fetchEmployees()
+        } else {
+            let response = await searchByName(value)
+            setEmployees(response.data)
+        }
     }
 
     useEffect(() => {
@@ -28,8 +47,16 @@ const Employees = () => {
     }
 
     let handleDelete = async (id) => {
-        await deleteEmployee(id)
-        fetchEmployees();
+        let confirmed = window.confirm("Are you sure want to delete?")
+        if (confirmed) {
+            try {
+                await deleteEmployee(id)
+                fetchEmployees();
+                toast.success("Employee deleted!")
+            } catch (error) {
+                toast.error("something went wrong!")
+            }
+        }
     }
 
     let filteredEmployees = employees.filter((emp) => emp.department === deptsFilter || deptsFilter === "")
@@ -47,6 +74,7 @@ const Employees = () => {
                         depts.map((dept, index) => <option key={index} value={dept}>{dept}</option>)
                     }
                 </select>
+                <input type="text" onChange={handleSearch} value={search} placeholder='Search by name...' />
                 <button onClick={() => nav("/app/add-employee")}>+Add Employee</button>
             </div>
             <div className="employee-table">

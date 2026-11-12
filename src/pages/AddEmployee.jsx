@@ -1,10 +1,12 @@
 import axios from 'axios'
 import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { addEmployee, getEmployees } from '../services/services'
+import { addEmployee, getAllDepartments, getEmployees } from '../services/services'
+import employeeLogo from '../assets/EmployeeLogo.png'
+import { toast } from 'react-toastify'
 
 const AddEmployee = () => {
-    
+
     let nav = useNavigate()
 
     let [employee, setEmployee] = useState({
@@ -16,12 +18,10 @@ const AddEmployee = () => {
 
     let [depts, setDepts] = useState([])
 
-    let fetchEmployees = async () => {
+    let fetchDepartments = async () => {
         try {
-            let response = await getEmployees()
-            let data = response.data
-
-            let departments = [...new Set(data.map((emp) => emp.department))]
+            let response4departmentsAll = await getAllDepartments();
+            let departments = response4departmentsAll.data
             setDepts(departments)
         } catch (error) {
             console.log(error);
@@ -29,7 +29,7 @@ const AddEmployee = () => {
     }
 
     useEffect(() => {
-        fetchEmployees()
+        fetchDepartments()
     }, [])
 
     const handleChange = (e) => {
@@ -41,12 +41,17 @@ const AddEmployee = () => {
         e.preventDefault();
         try {
             await addEmployee(employee)
+            toast.success("Employee added successfully!")
             nav("/app/employees")
         } catch (error) {
+            toast.error("Something went wrong!")
             console.log(error);
 
         }
     }
+
+    console.log(employee);
+    
 
     return (
         <div className="add-employee">
@@ -57,7 +62,7 @@ const AddEmployee = () => {
             <div className="add-employee-form">
                 <div className="form-top">
                     <div className="form-top-left">
-                        {/* <img src="" alt="logo" /> */}
+                        <img src={employeeLogo} alt="logo" />
                     </div>
                     <div className="form-top-right">
                         <h3>Employee information</h3>
@@ -67,7 +72,7 @@ const AddEmployee = () => {
                 <form onSubmit={handleSubmit}>
                     <input type="text" placeholder='Enter name' name="name" value={employee.name} onChange={handleChange} />
                     <input type="email" placeholder='Enter email' name="email" value={employee.email} onChange={handleChange} />
-                    <select name="department" onChange={handleChange}>
+                    <select name="department" onChange={handleChange} value={employee.department}>
                         <option value="">Select department</option>
                         {
                             depts.map((dept, index) => {

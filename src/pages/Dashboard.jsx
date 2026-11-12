@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { getEmployees } from '../services/services'
+import { getAllDepartments, getEmployees } from '../services/services'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 import totalEmployees from '../assets/total_employees.png'
 import totatDepartment from '../assets/total_departments.png'
@@ -10,12 +10,18 @@ const Dashboard = () => {
     let username = localStorage.getItem("username")
 
     let [employees, setEmployees] = useState([])
+    let [depts, setDepts] = useState([])
 
-    let fetchEmployees = async () => {
+    let fetchEmployeesAndDepartments = async () => {
         try {
-            let response = await getEmployees()
-            let data = response.data
+
+            let [response4EmployeesAll, response4departmentsAll] = await Promise.all([getEmployees(), getAllDepartments()])
+
+            let data = response4EmployeesAll.data
             setEmployees(data)
+
+            let data2 = response4departmentsAll.data
+            setDepts(data2)
 
         } catch (error) {
             console.log(error);
@@ -23,21 +29,17 @@ const Dashboard = () => {
     }
 
     useEffect(() => {
-        fetchEmployees()
+        fetchEmployeesAndDepartments()
     }, [])
 
     let total_emps = employees.length
-    let total_dept = new Set(employees.map((emp) => emp.department)).size
+    let total_dept = depts.length
 
-    let chart_data = []
-    employees.forEach((emp) => {
-        let exist = chart_data.find(item => item.department === emp.department)
-        if (exist) {
-            exist.count++;
-        } else {
-            chart_data.push({ department: emp.department, count: 1 })
-        }
-    })
+    let chart_data = depts.map(dept=>({
+        department:dept,
+        count:employees.filter(emp=>emp.department===dept).length
+    }))
+    
     return (
         <div className="dashboard">
             <div className="dashboard-header">
@@ -77,9 +79,9 @@ const Dashboard = () => {
                 <h3>Employees Per Department</h3>
                 <ResponsiveContainer width="100%" height={300}>
                     <BarChart data={chart_data}>
-                        <CartesianGrid strokeDasharray="3 3" />
+                        <CartesianGrid strokeDasharray="1 1" />
                         <XAxis dataKey="department" />
-                        <YAxis/>
+                        <YAxis allowDecimals={false}/>
                         <Tooltip />
                         <Bar dataKey="count" fill="#1e3a5f" label={{ position: 'top' }} />
                     </BarChart>

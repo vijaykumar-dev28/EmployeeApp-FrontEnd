@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { addEmployee, getEmployees, getEmployeesById, updateEmployee } from '../services/services'
+import { addEmployee, getAllDepartments, getEmployees, getEmployeesById, updateEmployee } from '../services/services'
+import { toast } from 'react-toastify'
 
 const EditEmployee = () => {
     let nav = useNavigate()
@@ -17,9 +18,8 @@ const EditEmployee = () => {
     let fetchEmployees = async () => {
         try {
 
-            let [response4EmployeeById, reponse4EmployeeAll] = await Promise.all([getEmployeesById(id), getEmployees()])
+            let [response4EmployeeById, response4departmentsAll] = await Promise.all([getEmployeesById(id), getAllDepartments()])
             let data = response4EmployeeById.data
-            let data2 = reponse4EmployeeAll.data
 
             setEmployee({
                 name: data.name,
@@ -28,7 +28,7 @@ const EditEmployee = () => {
                 salary: data.salary,
             })
 
-            let departments = [...new Set(data2.map((emp) => emp.department))]
+            let departments = response4departmentsAll.data
             setDepts(departments)
         } catch (error) {
             console.log(error);
@@ -48,8 +48,10 @@ const EditEmployee = () => {
         e.preventDefault();
         try {
             await updateEmployee(id, employee)
+            toast.success("Employee updated successfully!")
             nav("/app/employees")
         } catch (error) {
+            toast.error("Something went wrong!")
             console.log(error);
 
         }

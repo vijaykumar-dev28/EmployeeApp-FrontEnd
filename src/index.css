@@ -312,6 +312,16 @@ nav {
   outline: none;
 }
 
+.employee-middle input {
+  padding: 10px 16px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 15px;
+  color: #555;
+  width: 250px;
+  outline: none;
+}
+
 .employee-middle button {
   padding: 10px 20px;
   background-color: #28a745;
@@ -419,6 +429,12 @@ tr:hover {
   gap: 15px;
   margin-bottom: 25px;
   width: 100%;
+}
+
+.form-top img {
+  height: 40px;
+  width: 40px;
+
 }
 
 .form-top-left {
